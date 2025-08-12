@@ -12,10 +12,10 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Database connection
+// Database connection - Supabase
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/planning_tool',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 // Test database connection

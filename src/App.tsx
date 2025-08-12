@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import LoadingSpinner from './components/LoadingSpinner'
 
 // Lazy load components for better performance
+const Dashboard = React.lazy(() => import('./pages/Dashboard'))
 const PlanningBoard = React.lazy(() => import('./pages/PlanningBoard'))
 const Materials = React.lazy(() => import('./pages/Materials'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
@@ -13,7 +14,8 @@ function App() {
     <Layout>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          <Route path="/" element={<PlanningBoard />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/planning" element={<PlanningBoard />} />
           <Route path="/materials" element={<Materials />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
