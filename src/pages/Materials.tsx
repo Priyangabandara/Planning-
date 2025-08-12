@@ -127,26 +127,28 @@ const Materials: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Materials Inventory</h1>
-          <p className="text-gray-600">Monitor stock levels and update quantities as needed.</p>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span className="text-sm text-gray-600">Good Stock</span>
+      <div className="card">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold text-gradient-sunset font-display">Materials Inventory</h1>
+            <p className="text-gray-600 text-lg">Monitor stock levels and update quantities as needed.</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
-            <span className="text-sm text-gray-600">Low Stock</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm text-gray-600">Out of Stock</span>
+          
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-success-500 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-700">Good Stock</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-warning-500 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-700">Low Stock</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-danger-500 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-700">Out of Stock</span>
+            </div>
           </div>
         </div>
       </div>
@@ -161,14 +163,18 @@ const Materials: React.FC = () => {
           return (
             <div
               key={material.material_id}
-              className={`card ${statusDisplay.bg} ${statusDisplay.border} transition-all hover:shadow-md`}
+              className="material-card group hover:scale-105 transition-all duration-300"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Package className="h-5 w-5 text-gray-500" />
-                  <h3 className="font-semibold text-gray-900">{material.material_name}</h3>
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg">
+                    <Package className="h-5 w-5 text-primary-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-lg">{material.material_name}</h3>
                 </div>
-                <StatusIcon className={`h-5 w-5 ${statusDisplay.color}`} />
+                <div className={`p-2 rounded-lg ${statusDisplay.bg}`}>
+                  <StatusIcon className={`h-5 w-5 ${statusDisplay.color}`} />
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -200,34 +206,40 @@ const Materials: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Current Stock:</span>
-                      <span className="text-lg font-bold text-gray-900">
+                      <span className="text-sm font-medium text-gray-600">Current Stock:</span>
+                      <span className="text-2xl font-bold text-gray-900">
                         {material.stock_qty}
                       </span>
                     </div>
                     
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all ${
-                          material.stock_qty === 0
-                            ? 'bg-red-500'
-                            : material.stock_qty < 50
-                            ? 'bg-orange-500'
-                            : material.stock_qty < 100
-                            ? 'bg-yellow-500'
-                            : 'bg-green-500'
-                        }`}
-                        style={{
-                          width: `${Math.min((material.stock_qty / 200) * 100, 100)}%`
-                        }}
-                      ></div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>Stock Level</span>
+                        <span>{Math.min((material.stock_qty / 200) * 100, 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div
+                          className={`progress-fill ${
+                            material.stock_qty === 0
+                              ? 'danger'
+                              : material.stock_qty < 50
+                              ? 'danger'
+                              : material.stock_qty < 100
+                              ? 'warning'
+                              : 'success'
+                          }`}
+                          style={{
+                            width: `${Math.min((material.stock_qty / 200) * 100, 100)}%`
+                          }}
+                        ></div>
+                      </div>
                     </div>
 
                     <button
                       onClick={() => startEditing(material)}
-                      className="w-full btn-secondary text-sm"
+                      className="w-full btn-primary text-sm py-2"
                     >
                       Update Stock
                     </button>
@@ -246,30 +258,30 @@ const Materials: React.FC = () => {
       </div>
 
       {/* Summary Stats */}
-      <div className="card bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4">Inventory Summary</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-900">{materials.length}</div>
-            <div className="text-sm text-blue-700">Total Materials</div>
+      <div className="card bg-gradient-to-br from-primary-50 via-blue-50 to-indigo-50 border-primary-200">
+        <h3 className="text-xl font-bold text-gradient-sunset font-display mb-6">Inventory Summary</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="text-center p-4 bg-white/60 rounded-xl backdrop-blur-sm">
+            <div className="text-3xl font-bold text-primary-600 mb-1">{materials.length}</div>
+            <div className="text-sm font-medium text-primary-700">Total Materials</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+          <div className="text-center p-4 bg-white/60 rounded-xl backdrop-blur-sm">
+            <div className="text-3xl font-bold text-success-600 mb-1">
               {materials.filter(m => getStockStatus(m.stock_qty) === 'good-stock').length}
             </div>
-            <div className="text-sm text-green-700">Good Stock</div>
+            <div className="text-sm font-medium text-success-700">Good Stock</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">
+          <div className="text-center p-4 bg-white/60 rounded-xl backdrop-blur-sm">
+            <div className="text-3xl font-bold text-warning-600 mb-1">
               {materials.filter(m => getStockStatus(m.stock_qty) === 'low-stock').length}
             </div>
-            <div className="text-sm text-orange-700">Low Stock</div>
+            <div className="text-sm font-medium text-warning-700">Low Stock</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">
+          <div className="text-center p-4 bg-white/60 rounded-xl backdrop-blur-sm">
+            <div className="text-3xl font-bold text-danger-600 mb-1">
               {materials.filter(m => getStockStatus(m.stock_qty) === 'out-of-stock').length}
             </div>
-            <div className="text-sm text-red-700">Out of Stock</div>
+            <div className="text-sm font-medium text-danger-700">Out of Stock</div>
           </div>
         </div>
       </div>

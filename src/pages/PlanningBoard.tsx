@@ -149,58 +149,57 @@ const PlanningBoard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Planning Board</h1>
-          <p className="text-gray-600">Drag and drop orders to reschedule. BOM availability is checked automatically.</p>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span className="text-sm text-gray-600">Available</span>
+      <div className="card">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold text-gradient-sunset font-display">Planning Board</h1>
+            <p className="text-gray-600 text-lg">Drag and drop orders to reschedule. BOM availability is checked automatically.</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm text-gray-600">Shortage</span>
+          
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-success-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-gray-700">Available</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-danger-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-gray-700">Shortage</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Timeline */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
-          <div className="min-w-max">
-            {/* Timeline Header */}
-            <div className="grid grid-cols-30 gap-1 p-4 border-b border-gray-200 bg-gray-50">
-              {timelineSlots.map((slot) => (
-                <div key={slot.id} className="text-center">
-                  <div className="text-sm font-medium text-gray-900">
-                    {format(parseISO(slot.date), 'MMM dd')}
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="min-w-max">
+              {/* Timeline Header */}
+              <div className="grid grid-cols-30 gap-2 p-6 border-b border-gray-200/50 bg-gradient-to-r from-primary-50 to-blue-50">
+                {timelineSlots.map((slot) => (
+                  <div key={slot.id} className="text-center">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {format(parseISO(slot.date), 'MMM dd')}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium">
+                      {format(parseISO(slot.date), 'EEE')}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {format(parseISO(slot.date), 'EEE')}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* Timeline Slots */}
-            <div className="grid grid-cols-30 gap-1 p-4">
-              {timelineSlots.map((slot) => (
-                <Droppable key={slot.id} droppableId={slot.id}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`min-h-[120px] p-2 rounded-lg border-2 border-dashed transition-colors ${
-                        snapshot.isDraggingOver
-                          ? 'border-blue-400 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
+              {/* Timeline Slots */}
+              <div className="grid grid-cols-30 gap-2 p-6">
+                {timelineSlots.map((slot) => (
+                  <Droppable key={slot.id} droppableId={slot.id}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={`timeline-slot ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+                      >
                       {slot.orders.map((order, index) => (
                         <Draggable
                           key={order.order_id}
@@ -212,29 +211,32 @@ const PlanningBoard: React.FC = () => {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`mb-2 p-3 rounded-lg border cursor-move transition-all ${
-                                snapshot.isDragging
-                                  ? 'shadow-lg transform rotate-2'
-                                  : 'shadow-sm'
-                              } ${
-                                order.hasShortage
-                                  ? 'bg-red-50 border-red-200'
-                                  : 'bg-green-50 border-green-200'
+                              className={`order-card ${order.hasShortage ? 'shortage' : 'available'} ${
+                                snapshot.isDragging ? 'dragging' : ''
                               }`}
                               onClick={() => setSelectedOrder(order)}
                             >
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-sm text-gray-900 truncate">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-semibold text-sm text-gray-900 truncate">
                                   {order.order_name}
                                 </h4>
-                                {order.hasShortage ? (
-                                  <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                                ) : (
-                                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                )}
+                                <div className={`status-badge ${order.hasShortage ? 'shortage' : 'available'}`}>
+                                  {order.hasShortage ? (
+                                    <AlertTriangle className="h-3 w-3 mr-1" />
+                                  ) : (
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                  )}
+                                  {order.hasShortage ? 'Shortage' : 'Available'}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-600">
+                              <div className="text-xs text-gray-600 font-medium">
                                 {format(parseISO(order.start_date), 'MMM dd')} - {format(parseISO(order.end_date), 'MMM dd')}
+                              </div>
+                              <div className="mt-2 flex items-center space-x-2">
+                                <div className="flex-1 progress-bar">
+                                  <div className={`progress-fill ${order.hasShortage ? 'danger' : 'success'}`} style={{ width: '75%' }}></div>
+                                </div>
+                                <span className="text-xs text-gray-500">75%</span>
                               </div>
                             </div>
                           )}
