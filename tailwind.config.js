@@ -32,6 +32,9 @@ export default {
           900: '#0f172a',
         }
       },
+      gridTemplateColumns: {
+        '30': 'repeat(30, minmax(0, 1fr))',
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },

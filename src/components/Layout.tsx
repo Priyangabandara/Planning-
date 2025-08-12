@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, BarChart3, Palette, Home } from 'lucide-react'
+import { Menu, X, Calendar, Package } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -11,9 +11,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation()
 
   const navigation = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-    { name: 'Components', href: '/components', icon: Palette },
+    { name: 'Planning Board', href: '/', icon: Calendar },
+    { name: 'Materials', href: '/materials', icon: Package },
   ]
 
   const isActive = (path: string) => location.pathname === path
@@ -27,8 +26,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <Zap className="h-8 w-8 text-primary-600" />
-                <span className="text-xl font-bold text-gradient">FastReact</span>
+                <Calendar className="h-8 w-8 text-blue-600" />
+                <span className="text-xl font-bold text-gradient">Planning Tool</span>
               </Link>
             </div>
 
@@ -42,8 +41,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     to={item.href}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                       isActive(item.href)
-                        ? 'text-primary-600 bg-primary-50'
-                        : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -57,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-600 hover:text-primary-600 p-2"
+                className="text-gray-600 hover:text-blue-600 p-2"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -82,8 +81,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                       isActive(item.href)
-                        ? 'text-primary-600 bg-primary-50'
-                        : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
                     }`}
                   >
                     <Icon className="h-5 w-5" />
@@ -105,7 +104,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-500">
-            <p>&copy; 2024 FastReact. Built with modern web technologies.</p>
+            <p>&copy; 2024 Planning Tool. Drag-and-drop production planning with BOM checking.</p>
           </div>
         </div>
       </footer>

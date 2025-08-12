@@ -1,150 +1,183 @@
-# FastReact - Modern React Development Framework
+# Planning Tool - Drag-and-Drop Production Planning
 
-A high-performance React application built with modern web technologies, featuring lightning-fast development, beautiful UI components, and production-ready optimizations.
+A modern web-based planning tool that combines drag-and-drop scheduling with real-time BOM (Bill of Materials) checking. Perfect for manufacturing and production planning workflows.
 
 ## 🚀 Features
 
-- **⚡ Lightning Fast Development** - Built with Vite for instant hot reloading
-- **🎨 Modern UI Design** - Beautiful components with Tailwind CSS
-- **📱 Responsive & Accessible** - Mobile-first design with accessibility best practices
-- **🔧 TypeScript Support** - Full type safety and better developer experience
-- **📊 Interactive Dashboard** - Real-time data visualization and metrics
-- **🎯 Component Library** - Reusable UI components with code examples
-- **🚀 Performance Optimized** - Code splitting, lazy loading, and modern build tools
+- **📅 Drag-and-Drop Timeline** - Intuitive order scheduling with visual timeline
+- **📦 BOM Integration** - Automatic material availability checking
+- **🎨 Color-Coded Status** - Green for available, red for shortages
+- **📊 Real-time Updates** - Instant feedback on schedule changes
+- **📱 Responsive Design** - Works on desktop and mobile devices
+- **🔍 Material Management** - Track and update stock levels
+- **⚡ Fast Performance** - Built with React and optimized for speed
 
 ## 🛠️ Tech Stack
 
-- **Frontend Framework**: React 18 with TypeScript
-- **Build Tool**: Vite 4
-- **Styling**: Tailwind CSS 3
-- **Icons**: Lucide React
-- **Routing**: React Router DOM 6
-- **Code Quality**: ESLint, TypeScript
-- **Development**: Hot Module Replacement, Fast Refresh
+- **Frontend**: React 18 + TypeScript + Tailwind CSS
+- **Drag & Drop**: React Beautiful DnD
+- **Backend**: Node.js + Express
+- **Database**: PostgreSQL (with Supabase support)
+- **Build Tool**: Vite
+- **Date Handling**: date-fns
 
 ## 📦 Installation
 
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd fastreact-app
+   cd planning-tool
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
-3. **Start development server**
+3. **Set up the database**
    ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
+   # Create a PostgreSQL database
+   createdb planning_tool
+   
+   # Run the schema
+   psql planning_tool < server/database.sql
    ```
 
-4. **Open your browser**
+4. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database connection
+   ```
+
+5. **Start the development servers**
+   ```bash
+   npm run dev:full
+   ```
+
+6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🚀 Available Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start frontend development server
+- `npm run server` - Start backend API server
+- `npm run dev:full` - Start both frontend and backend
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript type checking
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/          # Reusable UI components
-│   ├── Layout.tsx      # Main layout with navigation
-│   └── LoadingSpinner.tsx
-├── pages/              # Page components
-│   ├── Home.tsx        # Landing page
-│   ├── Dashboard.tsx   # Analytics dashboard
-│   ├── Components.tsx  # Component showcase
-│   └── NotFound.tsx    # 404 page
-├── App.tsx             # Main app component
-├── main.tsx            # Application entry point
-└── index.css           # Global styles and Tailwind
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── Layout.tsx      # Main layout with navigation
+│   │   └── LoadingSpinner.tsx
+│   ├── pages/              # Page components
+│   │   ├── PlanningBoard.tsx  # Main planning interface
+│   │   ├── Materials.tsx      # Material inventory
+│   │   └── NotFound.tsx       # 404 page
+│   ├── App.tsx             # Main app component
+│   ├── main.tsx            # Application entry point
+│   └── index.css           # Global styles
+├── server/
+│   ├── index.js            # Express API server
+│   └── database.sql        # Database schema
+└── public/                 # Static assets
 ```
+
+## 🎯 Core Features
+
+### Planning Board
+- **Timeline View**: 30-day visual timeline with daily slots
+- **Drag & Drop**: Move orders between dates with real-time updates
+- **BOM Checking**: Automatic material availability verification
+- **Status Indicators**: Color-coded order status (green/red)
+- **Order Details**: Click to view detailed BOM information
+
+### Materials Management
+- **Stock Tracking**: Real-time inventory levels
+- **Status Categories**: Good stock, low stock, out of stock
+- **Quick Updates**: Inline editing of stock quantities
+- **Visual Indicators**: Progress bars and status icons
+
+## 🗄️ Database Schema
+
+### Orders Table
+```sql
+orders | order_id | order_name | start_date | end_date | bom_id | status
+```
+
+### BOM Table
+```sql
+bom | bom_id | material_id | qty_required
+```
+
+### Materials Table
+```sql
+materials | material_id | material_name | stock_qty
+```
+
+## 🔌 API Endpoints
+
+- `GET /api/orders` - Fetch orders with BOM information
+- `POST /api/updateOrder` - Update order start/end dates
+- `GET /api/bom/:orderId` - Get BOM details for specific order
+- `GET /api/materials` - Get all materials with stock levels
+- `PUT /api/materials/:id` - Update material stock quantity
 
 ## 🎨 Design System
 
-The application uses a custom design system built with Tailwind CSS:
-
-- **Colors**: Primary (blue) and secondary (gray) color palettes
-- **Typography**: Inter font family with consistent sizing
-- **Components**: Pre-built button, card, and form components
-- **Animations**: Smooth transitions and micro-interactions
+- **Color Coding**: Green (available), Red (shortage), Orange (low stock)
+- **Typography**: Inter font family for readability
 - **Spacing**: Consistent 4px grid system
+- **Animations**: Smooth transitions and drag feedback
+- **Responsive**: Mobile-first design approach
 
-## 🔧 Configuration Files
+## 🔧 Configuration
 
-- `vite.config.ts` - Vite build configuration
-- `tailwind.config.js` - Tailwind CSS customization
-- `tsconfig.json` - TypeScript configuration
-- `.eslintrc.cjs` - ESLint rules and configuration
+### Environment Variables
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/planning_tool
+PORT=3001
+NODE_ENV=development
+```
 
-## 📱 Responsive Design
+### For Supabase Deployment
+```env
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
+```
 
-- Mobile-first approach
-- Breakpoints: sm (640px), md (768px), lg (1024px), xl (1280px)
-- Touch-friendly interactions
-- Optimized for all screen sizes
+## 🚀 Deployment
 
-## ♿ Accessibility Features
+### Frontend (Vercel)
+1. Connect your GitHub repository to Vercel
+2. Set build command: `npm run build`
+3. Set output directory: `dist`
+4. Deploy
 
-- Semantic HTML structure
-- ARIA labels and roles
-- Keyboard navigation support
-- High contrast color schemes
-- Screen reader compatibility
+### Backend (Railway/Render)
+1. Connect your repository
+2. Set environment variables
+3. Set start command: `npm run server`
+4. Deploy
 
-## 🚀 Performance Features
-
-- **Code Splitting**: Automatic route-based code splitting
-- **Lazy Loading**: Components loaded on demand
-- **Tree Shaking**: Unused code elimination
-- **Optimized Assets**: Compressed and optimized builds
-- **Fast Refresh**: Instant component updates during development
-
-## 🎯 Key Components
-
-### Layout Component
-- Responsive navigation with mobile menu
-- Active route highlighting
-- Consistent header and footer
-
-### Dashboard
-- Interactive statistics cards
-- Real-time activity feed
-- Quick action buttons
-- Chart placeholders for data visualization
-
-### Component Library
-- Button variants (primary, secondary)
-- Form inputs with icons
-- Card components
-- Alert messages
-- Code examples with copy functionality
+### Database (Supabase)
+1. Create a new Supabase project
+2. Run the database schema
+3. Update environment variables
+4. Connect your application
 
 ## 🔮 Future Enhancements
 
-- [ ] Add real chart libraries (Chart.js, Recharts)
-- [ ] Implement dark mode theme
-- [ ] Add user authentication
-- [ ] Create admin panel
-- [ ] Add unit and integration tests
-- [ ] Implement PWA features
-- [ ] Add internationalization (i18n)
+- [ ] Add real-time collaboration features
+- [ ] Implement order dependencies and constraints
+- [ ] Add machine/resource capacity planning
+- [ ] Create detailed reporting and analytics
+- [ ] Add user authentication and roles
+- [ ] Implement order templates and recurring orders
+- [ ] Add export functionality (PDF, Excel)
+- [ ] Create mobile app version
 
 ## 🤝 Contributing
 
@@ -161,10 +194,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with [React](https://reactjs.org/)
+- Drag and drop by [React Beautiful DnD](https://github.com/atlassian/react-beautiful-dnd)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - Icons from [Lucide](https://lucide.dev/)
-- Build tooling by [Vite](https://vitejs.dev/)
+- Database powered by [PostgreSQL](https://www.postgresql.org/)
 
 ---
 
-**FastReact** - Building the future of web development, one component at a time! 🚀
+**Planning Tool** - Streamline your production planning with drag-and-drop simplicity! 🚀
