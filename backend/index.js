@@ -24,7 +24,10 @@ app.use(express.json());
 // Database connection - Supabase
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { 
+    rejectUnauthorized: false,
+    ca: process.env.SUPABASE_SSL_CA
+  }
 });
 
 // Test database connection
