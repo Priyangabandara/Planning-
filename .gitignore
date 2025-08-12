@@ -8,8 +8,11 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+backend/node_modules
+frontend/node_modules
 dist
 dist-ssr
+frontend/dist
 *.local
 
 # Editor directories and files
@@ -29,3 +32,17 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Backend environment
+backend/.env
+backend/.env.local
+backend/.env.development.local
+backend/.env.test.local
+backend/.env.production.local
+
+# Frontend environment
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
