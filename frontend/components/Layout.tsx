@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Calendar, Package, Home, BarChart3, Settings } from 'lucide-react'
+import { Menu, X, Calendar, Package, BarChart3, Settings } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode

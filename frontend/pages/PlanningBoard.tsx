@@ -243,9 +243,9 @@ const PlanningBoard: React.FC = () => {
                         </Draggable>
                       ))}
                       {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
+                      </div>
+                    )}
+                  </Droppable>
               ))}
             </div>
           </div>

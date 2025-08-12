@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, Package, TrendingUp, AlertTriangle, CheckCircle, Clock, BarChart3, Users, Zap } from 'lucide-react'
+import { Calendar, Package, AlertTriangle, CheckCircle, Clock, BarChart3 } from 'lucide-react'
 
 interface DashboardStats {
   totalOrders: number
