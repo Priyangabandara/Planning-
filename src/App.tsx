@@ -1,0 +1,25 @@
+import React, { Suspense } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import LoadingSpinner from './components/LoadingSpinner'
+
+// Lazy load components for better performance
+const PlanningBoard = React.lazy(() => import('./pages/PlanningBoard'))
+const Materials = React.lazy(() => import('./pages/Materials'))
+const NotFound = React.lazy(() => import('./pages/NotFound'))
+
+function App() {
+  return (
+    <Layout>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/" element={<PlanningBoard />} />
+          <Route path="/materials" element={<Materials />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </Layout>
+  )
+}
+
+export default App
