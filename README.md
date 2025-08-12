@@ -1,89 +1,103 @@
-# Planning Tool - Drag-and-Drop Production Planning
+# Planning Tool
 
-A modern web-based planning tool that combines drag-and-drop scheduling with real-time BOM (Bill of Materials) checking. Perfect for manufacturing and production planning workflows.
+A modern planning tool with Node.js backend API and React frontend for managing orders, materials, and production planning.
 
-## 🚀 Features
-
-- **📅 Drag-and-Drop Timeline** - Intuitive order scheduling with visual timeline
-- **📦 BOM Integration** - Automatic material availability checking
-- **🎨 Color-Coded Status** - Green for available, red for shortages
-- **📊 Real-time Updates** - Instant feedback on schedule changes
-- **📱 Responsive Design** - Works on desktop and mobile devices
-- **🔍 Material Management** - Track and update stock levels
-- **⚡ Fast Performance** - Built with React and optimized for speed
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18 + TypeScript + Tailwind CSS
-- **Drag & Drop**: React Beautiful DnD
-- **Backend**: Node.js + Express
-- **Database**: PostgreSQL (with Supabase support)
-- **Build Tool**: Vite
-- **Date Handling**: date-fns
-
-## 📦 Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd planning-tool
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up the database**
-   ```bash
-   # Create a PostgreSQL database
-   createdb planning_tool
-   
-   # Run the schema
-   psql planning_tool < server/database.sql
-   ```
-
-4. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database connection
-   ```
-
-5. **Start the development servers**
-   ```bash
-   npm run dev:full
-   ```
-
-6. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 🚀 Available Scripts
-
-- `npm run dev` - Start frontend development server
-- `npm run server` - Start backend API server
-- `npm run dev:full` - Start both frontend and backend
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-## 📁 Project Structure
+## 🏗️ Project Structure
 
 ```
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── Layout.tsx      # Main layout with navigation
-│   │   └── LoadingSpinner.tsx
-│   ├── pages/              # Page components
-│   │   ├── PlanningBoard.tsx  # Main planning interface
-│   │   ├── Materials.tsx      # Material inventory
-│   │   └── NotFound.tsx       # 404 page
-│   ├── App.tsx             # Main app component
-│   ├── main.tsx            # Application entry point
-│   └── index.css           # Global styles
-├── server/
-│   ├── index.js            # Express API server
-│   └── database.sql        # Database schema
-└── public/                 # Static assets
+planning-tool/
+├── backend/                 # Node.js API Server
+│   ├── index.js            # Express server
+│   ├── database.sql        # Database schema
+│   ├── package.json        # Backend dependencies
+│   └── .env.example        # Backend environment template
+├── frontend/               # React Frontend
+│   ├── src/                # React source code
+│   ├── public/             # Static assets
+│   ├── package.json        # Frontend dependencies
+│   └── .env.example        # Frontend environment template
+├── package.json            # Root package.json for scripts
+└── README.md               # This file
+```
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+```bash
+npm run install:all
+```
+
+### 2. Set up Environment Files
+```bash
+# Backend environment
+cp backend/.env.example backend/.env
+# Edit backend/.env with your database connection
+
+# Frontend environment
+cp frontend/.env.example frontend/.env
+# Edit frontend/.env with your API URL
+```
+
+### 3. Set up Database
+```bash
+# Create database
+createdb planning_tool
+
+# Run the schema
+psql planning_tool < backend/database.sql
+```
+
+### 4. Start Development Servers
+```bash
+npm run dev
+```
+
+This will start:
+- Backend API on http://localhost:3001
+- Frontend on http://localhost:3000
+
+## 📁 Available Scripts
+
+### Root Level
+- `npm run install:all` - Install dependencies for all services
+- `npm run dev` - Start both backend and frontend in development mode
+- `npm run dev:backend` - Start only backend server
+- `npm run dev:frontend` - Start only frontend server
+- `npm run build` - Build frontend for production
+- `npm run start` - Start backend in production mode
+
+### Backend
+- `cd backend && npm run dev` - Start backend with nodemon
+- `cd backend && npm start` - Start backend in production
+
+### Frontend
+- `cd frontend && npm run dev` - Start frontend development server
+- `cd frontend && npm run build` - Build for production
+- `cd frontend && npm run lint` - Run ESLint
+- `cd frontend && npm run type-check` - Run TypeScript type checking
+
+## 🔧 Configuration
+
+### Backend Environment Variables (.env)
+```env
+# Database Configuration
+DATABASE_URL=postgresql://username:password@localhost:5432/planning_tool
+
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
+```
+
+### Frontend Environment Variables (.env)
+```env
+# API Configuration
+VITE_API_URL=http://localhost:3001/api
+
+# Development Configuration
+VITE_DEV_MODE=true
 ```
 
 ## 🎯 Core Features
@@ -125,6 +139,7 @@ materials | material_id | material_name | stock_qty
 - `GET /api/bom/:orderId` - Get BOM details for specific order
 - `GET /api/materials` - Get all materials with stock levels
 - `PUT /api/materials/:id` - Update material stock quantity
+- `GET /api/health` - Health check endpoint
 
 ## 🎨 Design System
 
@@ -134,71 +149,42 @@ materials | material_id | material_name | stock_qty
 - **Animations**: Smooth transitions and drag feedback
 - **Responsive**: Mobile-first design approach
 
-## 🔧 Configuration
+## 🛠️ Development
 
-### Environment Variables
-```env
-DATABASE_URL=postgresql://username:password@localhost:5432/planning_tool
-PORT=3001
-NODE_ENV=development
+### Backend Development
+The backend is built with:
+- **Node.js** with Express.js
+- **PostgreSQL** database
+- **CORS** enabled for frontend communication
+- **Environment-based configuration**
+
+### Frontend Development
+The frontend is built with:
+- **React 18** with TypeScript
+- **Vite** for fast development
+- **Tailwind CSS** for styling
+- **React Beautiful DnD** for drag and drop
+- **React Router** for navigation
+
+## 📦 Production Deployment
+
+### Backend Deployment
+```bash
+cd backend
+npm install --production
+npm start
 ```
 
-### For Supabase Deployment
-```env
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
+### Frontend Deployment
+```bash
+cd frontend
+npm run build
+# Serve the dist/ folder with your web server
 ```
 
-## 🚀 Deployment
+## 🔒 Security Notes
 
-### Frontend (Vercel)
-1. Connect your GitHub repository to Vercel
-2. Set build command: `npm run build`
-3. Set output directory: `dist`
-4. Deploy
-
-### Backend (Railway/Render)
-1. Connect your repository
-2. Set environment variables
-3. Set start command: `npm run server`
-4. Deploy
-
-### Database (Supabase)
-1. Create a new Supabase project
-2. Run the database schema
-3. Update environment variables
-4. Connect your application
-
-## 🔮 Future Enhancements
-
-- [ ] Add real-time collaboration features
-- [ ] Implement order dependencies and constraints
-- [ ] Add machine/resource capacity planning
-- [ ] Create detailed reporting and analytics
-- [ ] Add user authentication and roles
-- [ ] Implement order templates and recurring orders
-- [ ] Add export functionality (PDF, Excel)
-- [ ] Create mobile app version
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [React](https://reactjs.org/)
-- Drag and drop by [React Beautiful DnD](https://github.com/atlassian/react-beautiful-dnd)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Icons from [Lucide](https://lucide.dev/)
-- Database powered by [PostgreSQL](https://www.postgresql.org/)
-
----
-
-**Planning Tool** - Streamline your production planning with drag-and-drop simplicity! 🚀
+- Keep your `.env` files secure and never commit them to version control
+- The `.env` files are already in `.gitignore`
+- Use strong database passwords in production
+- Configure CORS properly for production environments
