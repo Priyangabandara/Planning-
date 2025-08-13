@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-success-400 to-success-600 rounded-full animate-pulse"></div>
                 </div>
                 <div>
-                  <span className="text-xl font-bold text-gradient-sunset font-display">Planning Tool</span>
+                  <span className="text-xl font-bold text-gradient-sunset font-display">Threadline</span>
                   <p className="text-xs text-gray-500 -mt-1">Production Management</p>
                 </div>
               </Link>
@@ -61,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Right side actions */}
             <div className="hidden md:flex items-center space-x-3">
-              <button className="p-2 rounded-xl text-gray-600 hover:text-primary-600 hover:bg:white/50 transition-all duration-300">
+              <button className="p-2 rounded-xl text-gray-600 hover:text-primary-600 hover:bg-white/50 transition-all duration-300">
                 <BarChart3 className="h-5 w-5" />
               </button>
               <button className="p-2 rounded-xl text-gray-600 hover:text-primary-600 hover:bg-white/50 transition-all duration-300">
@@ -128,7 +128,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-2">
               <Calendar className="h-5 w-5 text-primary-600" />
-              <span className="text-gradient font-medium">Planning Tool</span>
+              <span className="text-gradient font-medium">Threadline</span>
             </div>
             <p className="text-gray-500 text-sm">
               Drag-and-drop production planning with intelligent BOM checking
