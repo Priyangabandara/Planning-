@@ -1,41 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Layout } from './Layout';
+import { DashboardPage } from './pages/Dashboard';
+import { ProductionLogsPage } from './pages/ProductionLogs';
+import { PlannedProductionPage } from './pages/PlannedProduction';
+import { AlertsPage } from './pages/Alerts';
 
 export function App() {
-  const [kpi, setKpi] = useState<{targetUnits: number; actualUnits: number; efficiency: number} | null>(null);
-  const [status, setStatus] = useState('connecting');
-
-  useEffect(() => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-    const socket: Socket = io(backendUrl, { transports: ['websocket'] });
-    socket.on('connect', () => setStatus('connected'));
-    socket.on('kpi_update', (payload) => setKpi(payload));
-    socket.on('disconnect', () => setStatus('disconnected'));
-    return () => { socket.disconnect(); };
-  }, []);
-
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', padding: 24 }}>
-      <h1>MES Dashboard</h1>
-      <p>Status: {status}</p>
-      {kpi ? (
-        <div style={{ display: 'flex', gap: 24 }}>
-          <Card title="Target Units" value={kpi.targetUnits.toFixed(0)} />
-          <Card title="Actual Units" value={kpi.actualUnits.toFixed(0)} />
-          <Card title="Efficiency" value={(kpi.efficiency * 100).toFixed(1) + '%'} />
-        </div>
-      ) : (
-        <p>Waiting for KPI updates...</p>
-      )}
-    </div>
-  );
-}
-
-function Card({ title, value }: { title: string; value: string }) {
-  return (
-    <div style={{ border: '1px solid #eee', borderRadius: 8, padding: 16, minWidth: 160 }}>
-      <div style={{ color: '#666', marginBottom: 8 }}>{title}</div>
-      <div style={{ fontSize: 28, fontWeight: 700 }}>{value}</div>
-    </div>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/production-logs" element={<ProductionLogsPage />} />
+        <Route path="/planned-production" element={<PlannedProductionPage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
+      </Routes>
+    </Layout>
   );
 }
