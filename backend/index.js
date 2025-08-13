@@ -3,6 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { getErpAdapter } from './erp/index.js';
+import { getAllMaterials, updateMaterialStock } from './repositories/materials.js'
+import { getAllOrders, updateOrderDates } from './repositories/orders.js'
+import { createProductionLog, listProductionLogs } from './repositories/logs.js'
+import { createPlanned, listPlanned, updatePlanned, deletePlanned } from './repositories/planned.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,12 +20,24 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Create HTTP server and Socket.IO
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  },
+});
+
 // Middleware
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
+
+// ERP Adapter
+const erp = getErpAdapter();
 
 // Mock data for development
 const mockOrders = [
@@ -72,28 +91,54 @@ const mockMaterials = [
     material_id: 1,
     material_name: "Steel Plate",
     stock_qty: 15,
-    unit: "pieces"
+    unit: "pieces",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     material_id: 2,
     material_name: "Aluminum Sheet",
     stock_qty: 8,
-    unit: "pieces"
+    unit: "pieces",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     material_id: 3,
     material_name: "Copper Wire",
     stock_qty: 15,
-    unit: "meters"
+    unit: "meters",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
+
+// Socket.IO
+io.on('connection', (socket) => {
+  console.log('🔌 Client connected:', socket.id);
+  socket.emit('server:hello', { message: 'Welcome to Planning Tool Realtime' });
+  socket.on('disconnect', () => console.log('🔌 Client disconnected:', socket.id));
+});
+
+function emitMaterialsUpdate() {
+  io.emit('materials:update', mockMaterials);
+}
+
+function emitOrdersUpdate() {
+  io.emit('orders:update', mockOrders);
+}
+
+function emitPlannedUpdate() {
+  io.emit('planned:update')
+}
 
 // API Routes
 
 // GET /orders - Fetch orders with BOM info
 app.get('/api/orders', async (req, res) => {
   try {
-    res.json(mockOrders);
+    const orders = await getAllOrders(mockOrders)
+    res.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -103,10 +148,33 @@ app.get('/api/orders', async (req, res) => {
 // GET /materials - Fetch materials
 app.get('/api/materials', async (req, res) => {
   try {
-    res.json(mockMaterials);
+    const materials = await getAllMaterials(mockMaterials)
+    res.json(materials);
   } catch (error) {
     console.error('Error fetching materials:', error);
     res.status(500).json({ error: 'Failed to fetch materials' });
+  }
+});
+
+// PUT /materials/:id - Update material stock quantity
+app.put('/api/materials/:id', async (req, res) => {
+  try {
+    const materialId = parseInt(req.params.id, 10);
+    const { stock_qty } = req.body;
+
+    if (Number.isNaN(materialId)) {
+      return res.status(400).json({ error: 'Invalid material id' });
+    }
+    if (typeof stock_qty !== 'number' || stock_qty < 0) {
+      return res.status(400).json({ error: 'Invalid stock quantity' });
+    }
+
+    const updated = await updateMaterialStock(materialId, stock_qty, mockMaterials)
+    emitMaterialsUpdate();
+    return res.json({ success: true, material: updated });
+  } catch (error) {
+    console.error('Error updating material:', error);
+    res.status(500).json({ error: 'Failed to update material' });
   }
 });
 
@@ -119,19 +187,113 @@ app.post('/api/updateOrder', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    // Find and update the order
-    const orderIndex = mockOrders.findIndex(order => order.order_id === parseInt(orderId));
-    if (orderIndex === -1) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    
-    mockOrders[orderIndex].start_date = startDate;
-    mockOrders[orderIndex].end_date = endDate;
-    
-    res.json({ success: true, order: mockOrders[orderIndex] });
+    const updated = await updateOrderDates(parseInt(orderId,10), startDate, endDate, mockOrders)
+    emitOrdersUpdate();
+    res.json({ success: true, order: updated });
   } catch (error) {
     console.error('Error updating order:', error);
     res.status(500).json({ error: 'Failed to update order' });
+  }
+});
+
+// Production Logs
+app.post('/api/logs/production', async (req, res) => {
+  try {
+    const payload = req.body
+    const required = ['order_id','workstation_id','qty_good','qty_reject','timestamp']
+    for (const key of required) if (payload[key] === undefined) return res.status(400).json({ error: `Missing ${key}` })
+    const log = await createProductionLog(payload)
+    io.emit('logs:new', log)
+    res.json({ success: true, log })
+  } catch (error) {
+    console.error('Error creating production log:', error)
+    res.status(500).json({ error: 'Failed to create production log' })
+  }
+})
+
+app.get('/api/logs/production', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 100
+    const logs = await listProductionLogs(limit)
+    res.json(logs)
+  } catch (error) {
+    console.error('Error fetching production logs:', error)
+    res.status(500).json({ error: 'Failed to fetch production logs' })
+  }
+})
+
+// Planned Production
+app.get('/api/planned', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 200
+    const data = await listPlanned(limit)
+    res.json(data)
+  } catch (error) {
+    console.error('Error listing planned production:', error)
+    res.status(500).json({ error: 'Failed to list planned production' })
+  }
+})
+
+app.post('/api/planned', async (req, res) => {
+  try {
+    const required = ['order_id','planned_date','quantity']
+    for (const key of required) if (!req.body[key]) return res.status(400).json({ error: `Missing ${key}` })
+    const item = await createPlanned(req.body)
+    emitPlannedUpdate()
+    res.json({ success: true, item })
+  } catch (error) {
+    console.error('Error creating planned production:', error)
+    res.status(500).json({ error: 'Failed to create planned production' })
+  }
+})
+
+app.put('/api/planned/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10)
+    const item = await updatePlanned(id, req.body)
+    emitPlannedUpdate()
+    res.json({ success: true, item })
+  } catch (error) {
+    console.error('Error updating planned production:', error)
+    res.status(500).json({ error: 'Failed to update planned production' })
+  }
+})
+
+app.delete('/api/planned/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10)
+    const result = await deletePlanned(id)
+    emitPlannedUpdate()
+    res.json({ success: true, ...result })
+  } catch (error) {
+    console.error('Error deleting planned production:', error)
+    res.status(500).json({ error: 'Failed to delete planned production' })
+  }
+})
+
+// KPIs overview
+app.get('/api/kpis/overview', async (req, res) => {
+  try {
+    // Simple mock KPI calc: totals from logs
+    const logs = await listProductionLogs(1000)
+    const totalGood = logs.reduce((s,l)=>s + (l.qty_good||0), 0)
+    const totalReject = logs.reduce((s,l)=>s + (l.qty_reject||0), 0)
+    const totalDowntime = logs.reduce((s,l)=>s + (l.downtime_minutes||0), 0)
+    const oee = totalGood > 0 ? Math.max(50, Math.min(95, 100 - (totalReject/(totalGood+totalReject||1))*100 - (totalDowntime/ (logs.length*60 || 1))*10)) : 75
+    res.json({ totalGood, totalReject, totalDowntime, oee: Math.round(oee) })
+  } catch (error) {
+    console.error('Error computing KPIs:', error)
+    res.status(500).json({ error: 'Failed to compute KPIs' })
+  }
+})
+
+// ERP Adapter passthrough (mock for now)
+app.get('/api/erp/order/:orderId', async (req, res) => {
+  try {
+    const data = await erp.get_order_details(parseInt(req.params.orderId, 10));
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'ERP adapter error' });
   }
 });
 
@@ -141,7 +303,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`🚀 Backend server running on http://localhost:${port}`);
   console.log(`📊 Health check: http://localhost:${port}/api/health`);
 });

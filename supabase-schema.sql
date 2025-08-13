@@ -103,3 +103,92 @@ ON CONFLICT DO NOTHING;
 -- Grant necessary permissions
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres;
+
+-- Workstations / Lines
+CREATE TABLE IF NOT EXISTS workstations (
+  workstation_id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  line TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Production Logs (Actual)
+CREATE TABLE IF NOT EXISTS production_logs (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
+  workstation_id BIGINT REFERENCES workstations(workstation_id) ON DELETE SET NULL,
+  qty_good INTEGER NOT NULL DEFAULT 0 CHECK (qty_good >= 0),
+  qty_reject INTEGER NOT NULL DEFAULT 0 CHECK (qty_reject >= 0),
+  downtime_minutes INTEGER DEFAULT 0 CHECK (downtime_minutes >= 0),
+  reason TEXT,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Planned Production
+CREATE TABLE IF NOT EXISTS planned_production (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
+  planned_date DATE NOT NULL,
+  quantity INTEGER NOT NULL CHECK (quantity > 0),
+  workstation_id BIGINT REFERENCES workstations(workstation_id) ON DELETE SET NULL,
+  status TEXT DEFAULT 'planned' CHECK (status IN ('planned','in_progress','completed','cancelled')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TRIGGER update_planned_updated_at BEFORE UPDATE ON planned_production
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Alerts
+CREATE TABLE IF NOT EXISTS alerts (
+  id BIGSERIAL PRIMARY KEY,
+  type TEXT NOT NULL,
+  message TEXT NOT NULL,
+  severity TEXT DEFAULT 'info' CHECK (severity IN ('info','warning','critical')),
+  acknowledged BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Targets
+CREATE TABLE IF NOT EXISTS targets (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT REFERENCES orders(order_id) ON DELETE CASCADE,
+  workstation_id BIGINT REFERENCES workstations(workstation_id) ON DELETE SET NULL,
+  target_units INTEGER CHECK (target_units >= 0),
+  calc_context JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ERP Connections (metadata)
+CREATE TABLE IF NOT EXISTS erp_connections (
+  id BIGSERIAL PRIMARY KEY,
+  adapter TEXT NOT NULL,
+  config JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Users (simple placeholder)
+CREATE TABLE IF NOT EXISTS app_users (
+  user_id BIGSERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  role TEXT DEFAULT 'viewer' CHECK (role IN ('admin','planner','operator','viewer')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS enable and permissive policies (adjust later)
+ALTER TABLE workstations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE production_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE planned_production ENABLE ROW LEVEL SECURITY;
+ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE targets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE erp_connections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE app_users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all on workstations" ON workstations FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on production_logs" ON production_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on planned_production" ON planned_production FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on alerts" ON alerts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on targets" ON targets FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on erp_connections" ON erp_connections FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on app_users" ON app_users FOR ALL USING (true) WITH CHECK (true);
