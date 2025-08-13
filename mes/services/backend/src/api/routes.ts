@@ -31,15 +31,29 @@ router.get('/orders/:orderId/operations/:operationId/smv', async (req, res) => {
 });
 
 router.get('/realtime/metrics', async (_req, res) => {
-  // Example: call analytics service for a sample computation
-  const target = await axios.post(`${config.analyticsUrl}/compute/targets`, { smv: 0.75, qty: 1000 }).then(r => r.data);
-  res.json({
-    kpi: {
-      targetUnits: target.targetUnits,
-      actualUnits: 420,
-      efficiency: 420 / Math.max(target.targetUnits, 1)
-    }
-  });
+  // Example: call analytics service for a sample computation, with fallback if unavailable
+  try {
+    const target = await axios
+      .post(`${config.analyticsUrl}/compute/targets`, { smv: 0.75, qty: 1000 })
+      .then(r => r.data);
+    return res.json({
+      kpi: {
+        targetUnits: target.targetUnits,
+        actualUnits: 420,
+        efficiency: 420 / Math.max(target.targetUnits, 1),
+      },
+    });
+  } catch (err) {
+    const targetUnits = 1000;
+    return res.json({
+      kpi: {
+        targetUnits,
+        actualUnits: 420,
+        efficiency: 420 / Math.max(targetUnits, 1),
+      },
+      warning: 'Analytics service unavailable; using fallback',
+    });
+  }
 });
 
 export default router;
