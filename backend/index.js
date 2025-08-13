@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { getErpAdapter } from './erp/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,12 +16,24 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Create HTTP server and Socket.IO
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  },
+});
+
 // Middleware
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
+
+// ERP Adapter
+const erp = getErpAdapter();
 
 // Mock data for development
 const mockOrders = [
@@ -94,6 +109,21 @@ const mockMaterials = [
   }
 ];
 
+// Socket.IO
+io.on('connection', (socket) => {
+  console.log('🔌 Client connected:', socket.id);
+  socket.emit('server:hello', { message: 'Welcome to Planning Tool Realtime' });
+  socket.on('disconnect', () => console.log('🔌 Client disconnected:', socket.id));
+});
+
+function emitMaterialsUpdate() {
+  io.emit('materials:update', mockMaterials);
+}
+
+function emitOrdersUpdate() {
+  io.emit('orders:update', mockOrders);
+}
+
 // API Routes
 
 // GET /orders - Fetch orders with BOM info
@@ -137,6 +167,7 @@ app.put('/api/materials/:id', async (req, res) => {
     mockMaterials[materialIndex].stock_qty = stock_qty;
     mockMaterials[materialIndex].updated_at = new Date().toISOString();
 
+    emitMaterialsUpdate();
     return res.json({ success: true, material: mockMaterials[materialIndex] });
   } catch (error) {
     console.error('Error updating material:', error);
@@ -162,10 +193,21 @@ app.post('/api/updateOrder', async (req, res) => {
     mockOrders[orderIndex].start_date = startDate;
     mockOrders[orderIndex].end_date = endDate;
     
+    emitOrdersUpdate();
     res.json({ success: true, order: mockOrders[orderIndex] });
   } catch (error) {
     console.error('Error updating order:', error);
     res.status(500).json({ error: 'Failed to update order' });
+  }
+});
+
+// ERP Adapter passthrough (mock for now)
+app.get('/api/erp/order/:orderId', async (req, res) => {
+  try {
+    const data = await erp.get_order_details(parseInt(req.params.orderId, 10));
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'ERP adapter error' });
   }
 });
 
@@ -175,7 +217,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`🚀 Backend server running on http://localhost:${port}`);
   console.log(`📊 Health check: http://localhost:${port}/api/health`);
 });
