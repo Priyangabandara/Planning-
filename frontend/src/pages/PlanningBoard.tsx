@@ -3,6 +3,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { format, addDays, differenceInDays, parseISO } from 'date-fns'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { API_BASE_URL } from '../config'
+import { getSocket } from '../realtime'
 
 interface Order {
   order_id: number
@@ -125,6 +126,12 @@ const PlanningBoard: React.FC = () => {
 
   useEffect(() => {
     fetchOrders()
+    const socket = getSocket()
+    const onOrdersUpdate = () => fetchOrders()
+    socket.on('orders:update', onOrdersUpdate)
+    return () => {
+      socket.off('orders:update', onOrdersUpdate)
+    }
   }, [])
 
   if (loading) {

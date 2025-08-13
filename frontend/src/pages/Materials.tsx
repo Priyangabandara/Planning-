@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Package, AlertTriangle, CheckCircle, TrendingDown } from 'lucide-react'
 import { API_BASE_URL } from '../config'
+import { getSocket } from '../realtime'
 
 interface Material {
   material_id: number
@@ -103,6 +104,12 @@ const Materials: React.FC = () => {
 
   useEffect(() => {
     fetchMaterials()
+    const socket = getSocket()
+    const onMaterials = () => fetchMaterials()
+    socket.on('materials:update', onMaterials)
+    return () => {
+      socket.off('materials:update', onMaterials)
+    }
   }, [])
 
   if (loading) {
