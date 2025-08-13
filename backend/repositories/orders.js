@@ -3,25 +3,30 @@ import { getDbPool } from '../db/pool.js'
 export async function getAllOrders(mockOrders) {
   const pool = getDbPool()
   if (!pool) return mockOrders
-  const { rows } = await pool.query(
-    `SELECT o.order_id, o.order_name, o.start_date, o.end_date, o.bom_id, o.status,
-            COALESCE(json_agg(json_build_object(
-              'material_id', b.material_id,
-              'material_name', m.material_name,
-              'qty_required', b.qty_required,
-              'stock_qty', m.stock_qty,
-              'available', (m.stock_qty >= b.qty_required)
-            )) FILTER (WHERE b.bom_id IS NOT NULL), '[]') AS bom_items
-     FROM orders o
-     LEFT JOIN bom b ON b.bom_id = o.bom_id
-     LEFT JOIN materials m ON m.material_id = b.material_id
-     GROUP BY o.order_id
-     ORDER BY o.start_date ASC`
-  )
-  return rows.map(r => ({
-    ...r,
-    hasShortage: Array.isArray(r.bom_items) ? r.bom_items.some(i => !i.available) : false,
-  }))
+  try {
+    const { rows } = await pool.query(
+      `SELECT o.order_id, o.order_name, o.start_date, o.end_date, o.bom_id, o.status,
+              COALESCE(json_agg(json_build_object(
+                'material_id', b.material_id,
+                'material_name', m.material_name,
+                'qty_required', b.qty_required,
+                'stock_qty', m.stock_qty,
+                'available', (m.stock_qty >= b.qty_required)
+              )) FILTER (WHERE b.bom_id IS NOT NULL), '[]') AS bom_items
+       FROM orders o
+       LEFT JOIN bom b ON b.bom_id = o.bom_id
+       LEFT JOIN materials m ON m.material_id = b.material_id
+       GROUP BY o.order_id
+       ORDER BY o.start_date ASC`
+    )
+    return rows.map(r => ({
+      ...r,
+      hasShortage: Array.isArray(r.bom_items) ? r.bom_items.some(i => !i.available) : false,
+    }))
+  } catch (error) {
+    console.warn('[orders] DB error, falling back to mock:', error?.message)
+    return mockOrders
+  }
 }
 
 export async function updateOrderDates(orderId, startDate, endDate, mockOrders) {

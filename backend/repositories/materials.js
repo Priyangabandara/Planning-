@@ -3,8 +3,13 @@ import { getDbPool } from '../db/pool.js'
 export async function getAllMaterials(mockMaterials) {
   const pool = getDbPool()
   if (!pool) return mockMaterials
-  const { rows } = await pool.query('SELECT material_id, material_name, stock_qty, created_at, updated_at FROM materials ORDER BY material_name ASC')
-  return rows
+  try {
+    const { rows } = await pool.query('SELECT material_id, material_name, stock_qty, created_at, updated_at FROM materials ORDER BY material_name ASC')
+    return rows
+  } catch (error) {
+    console.warn('[materials] DB error, falling back to mock:', error?.message)
+    return mockMaterials
+  }
 }
 
 export async function updateMaterialStock(materialId, stockQty, mockMaterials) {
