@@ -72,19 +72,25 @@ const mockMaterials = [
     material_id: 1,
     material_name: "Steel Plate",
     stock_qty: 15,
-    unit: "pieces"
+    unit: "pieces",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     material_id: 2,
     material_name: "Aluminum Sheet",
     stock_qty: 8,
-    unit: "pieces"
+    unit: "pieces",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     material_id: 3,
     material_name: "Copper Wire",
     stock_qty: 15,
-    unit: "meters"
+    unit: "meters",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 
@@ -107,6 +113,34 @@ app.get('/api/materials', async (req, res) => {
   } catch (error) {
     console.error('Error fetching materials:', error);
     res.status(500).json({ error: 'Failed to fetch materials' });
+  }
+});
+
+// PUT /materials/:id - Update material stock quantity
+app.put('/api/materials/:id', async (req, res) => {
+  try {
+    const materialId = parseInt(req.params.id, 10);
+    const { stock_qty } = req.body;
+
+    if (Number.isNaN(materialId)) {
+      return res.status(400).json({ error: 'Invalid material id' });
+    }
+    if (typeof stock_qty !== 'number' || stock_qty < 0) {
+      return res.status(400).json({ error: 'Invalid stock quantity' });
+    }
+
+    const materialIndex = mockMaterials.findIndex((m) => m.material_id === materialId);
+    if (materialIndex === -1) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+
+    mockMaterials[materialIndex].stock_qty = stock_qty;
+    mockMaterials[materialIndex].updated_at = new Date().toISOString();
+
+    return res.json({ success: true, material: mockMaterials[materialIndex] });
+  } catch (error) {
+    console.error('Error updating material:', error);
+    res.status(500).json({ error: 'Failed to update material' });
   }
 });
 
