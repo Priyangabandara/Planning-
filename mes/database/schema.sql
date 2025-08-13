@@ -1,0 +1,90 @@
+-- Minimal relational schema for MES
+CREATE TABLE IF NOT EXISTS ProductionOrders (
+  id SERIAL PRIMARY KEY,
+  order_id VARCHAR(64) UNIQUE NOT NULL,
+  sku VARCHAR(128) NOT NULL,
+  description TEXT,
+  planned_quantity INTEGER NOT NULL,
+  due_date TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS OrderOperations (
+  id SERIAL PRIMARY KEY,
+  order_id VARCHAR(64) NOT NULL REFERENCES ProductionOrders(order_id) ON DELETE CASCADE,
+  operation_id VARCHAR(64) NOT NULL,
+  smv_minutes NUMERIC(10,4) NOT NULL,
+  UNIQUE(order_id, operation_id)
+);
+
+CREATE TABLE IF NOT EXISTS Materials (
+  id SERIAL PRIMARY KEY,
+  material_id VARCHAR(64) UNIQUE NOT NULL,
+  description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS Inventory (
+  id SERIAL PRIMARY KEY,
+  material_id VARCHAR(64) NOT NULL REFERENCES Materials(material_id) ON DELETE CASCADE,
+  quantity NUMERIC(14,4) NOT NULL DEFAULT 0,
+  unit VARCHAR(16) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ProductionLogs (
+  id SERIAL PRIMARY KEY,
+  order_id VARCHAR(64) NOT NULL,
+  workstation_id VARCHAR(64),
+  produced_qty INTEGER NOT NULL,
+  rejected_qty INTEGER NOT NULL DEFAULT 0,
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS PlannedProduction (
+  id SERIAL PRIMARY KEY,
+  order_id VARCHAR(64) NOT NULL,
+  planned_qty INTEGER NOT NULL,
+  start_time TIMESTAMP WITH TIME ZONE,
+  end_time TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS Targets (
+  id SERIAL PRIMARY KEY,
+  order_id VARCHAR(64) NOT NULL,
+  target_units INTEGER NOT NULL,
+  computed_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS Alerts (
+  id SERIAL PRIMARY KEY,
+  level VARCHAR(16) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  acknowledged BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS ERPConnections (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(64) UNIQUE NOT NULL,
+  adapter VARCHAR(32) NOT NULL,
+  config JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS Workstations (
+  id SERIAL PRIMARY KEY,
+  workstation_id VARCHAR(64) UNIQUE NOT NULL,
+  line VARCHAR(64)
+);
+
+CREATE TABLE IF NOT EXISTS Users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(64) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(32) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS DowntimeLogs (
+  id SERIAL PRIMARY KEY,
+  workstation_id VARCHAR(64) NOT NULL,
+  reason TEXT NOT NULL,
+  start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+  end_time TIMESTAMP WITH TIME ZONE
+);

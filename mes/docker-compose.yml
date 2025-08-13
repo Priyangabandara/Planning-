@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: mes
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/00-schema.sql:ro
+
+  analytics:
+    build: ./services/analytics
+    ports:
+      - "5000:5000"
+
+  backend:
+    build: ./services/backend
+    environment:
+      BACKEND_PORT: 4000
+      ANALYTICS_URL: http://analytics:5000
+      ERP_ADAPTER: mock
+      CORS_ORIGIN: http://localhost:5173,http://127.0.0.1:5173
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/mes
+    depends_on:
+      - analytics
+      - postgres
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./apps/frontend
+    environment:
+      VITE_BACKEND_URL: http://localhost:4000
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  db-data: {}
