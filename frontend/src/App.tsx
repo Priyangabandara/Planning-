@@ -8,6 +8,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'))
 const PlanningBoard = React.lazy(() => import('./pages/PlanningBoard'))
 const Materials = React.lazy(() => import('./pages/Materials'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
+const OperatorLog = React.lazy(() => import('./pages/OperatorLog'))
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/planning" element={<PlanningBoard />} />
           <Route path="/materials" element={<Materials />} />
+          <Route path="/operator" element={<OperatorLog />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

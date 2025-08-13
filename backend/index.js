@@ -9,6 +9,7 @@ import { getErpAdapter } from './erp/index.js';
 import { getAllMaterials, updateMaterialStock } from './repositories/materials.js'
 import { getAllOrders, updateOrderDates } from './repositories/orders.js'
 import { createProductionLog, listProductionLogs } from './repositories/logs.js'
+import { createPlanned, listPlanned, updatePlanned, deletePlanned } from './repositories/planned.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -127,6 +128,10 @@ function emitOrdersUpdate() {
   io.emit('orders:update', mockOrders);
 }
 
+function emitPlannedUpdate() {
+  io.emit('planned:update')
+}
+
 // API Routes
 
 // GET /orders - Fetch orders with BOM info
@@ -214,6 +219,55 @@ app.get('/api/logs/production', async (req, res) => {
   } catch (error) {
     console.error('Error fetching production logs:', error)
     res.status(500).json({ error: 'Failed to fetch production logs' })
+  }
+})
+
+// Planned Production
+app.get('/api/planned', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 200
+    const data = await listPlanned(limit)
+    res.json(data)
+  } catch (error) {
+    console.error('Error listing planned production:', error)
+    res.status(500).json({ error: 'Failed to list planned production' })
+  }
+})
+
+app.post('/api/planned', async (req, res) => {
+  try {
+    const required = ['order_id','planned_date','quantity']
+    for (const key of required) if (!req.body[key]) return res.status(400).json({ error: `Missing ${key}` })
+    const item = await createPlanned(req.body)
+    emitPlannedUpdate()
+    res.json({ success: true, item })
+  } catch (error) {
+    console.error('Error creating planned production:', error)
+    res.status(500).json({ error: 'Failed to create planned production' })
+  }
+})
+
+app.put('/api/planned/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10)
+    const item = await updatePlanned(id, req.body)
+    emitPlannedUpdate()
+    res.json({ success: true, item })
+  } catch (error) {
+    console.error('Error updating planned production:', error)
+    res.status(500).json({ error: 'Failed to update planned production' })
+  }
+})
+
+app.delete('/api/planned/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10)
+    const result = await deletePlanned(id)
+    emitPlannedUpdate()
+    res.json({ success: true, ...result })
+  } catch (error) {
+    console.error('Error deleting planned production:', error)
+    res.status(500).json({ error: 'Failed to delete planned production' })
   }
 })
 

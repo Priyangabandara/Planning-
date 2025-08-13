@@ -14,6 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Dashboard', href: '/', icon: BarChart3, description: 'Overview & analytics' },
     { name: 'Planning Board', href: '/planning', icon: Calendar, description: 'Drag & drop planning' },
     { name: 'Materials', href: '/materials', icon: Package, description: 'Inventory management' },
+    { name: 'Operator', href: '/operator', icon: Settings, description: 'Production logging' },
   ]
 
   const isActive = (path: string) => location.pathname === path
