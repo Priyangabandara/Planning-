@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
             description="Drag and drop order scheduling"
             icon={Calendar}
             color="primary"
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = '/planning'}
           />
           <QuickActionCard
             title="Manage Materials"

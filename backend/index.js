@@ -40,12 +40,20 @@ app.use(express.json());
 const erp = getErpAdapter();
 
 // Mock data for development
+function formatDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const today = new Date()
 const mockOrders = [
   {
     order_id: 1,
     order_name: "Production Order #001",
-    start_date: "2024-01-15",
-    end_date: "2024-01-20",
+    start_date: formatDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2)),
+    end_date: formatDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 6)),
     bom_id: 1,
     status: "in_progress",
     hasShortage: false,
@@ -69,8 +77,8 @@ const mockOrders = [
   {
     order_id: 2,
     order_name: "Production Order #002",
-    start_date: "2024-01-22",
-    end_date: "2024-01-25",
+    start_date: formatDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 8)),
+    end_date: formatDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 11)),
     bom_id: 2,
     status: "planned",
     hasShortage: true,
