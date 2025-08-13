@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Calendar, Package, AlertTriangle, CheckCircle, Clock, BarChart3 } from 'lucide-react'
+import { API_BASE_URL } from '../config'
 
 interface DashboardStats {
   totalOrders: number
@@ -29,8 +30,8 @@ const Dashboard: React.FC = () => {
     try {
       setLoading(true)
       const [ordersResponse, materialsResponse] = await Promise.all([
-        fetch('http://localhost:3001/api/orders'),
-        fetch('http://localhost:3001/api/materials')
+        fetch(`${API_BASE_URL}/orders`),
+        fetch(`${API_BASE_URL}/materials`)
       ])
 
       const orders = await ordersResponse.json()

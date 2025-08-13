@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Package, AlertTriangle, CheckCircle, TrendingDown } from 'lucide-react'
+import { API_BASE_URL } from '../config'
 
 interface Material {
   material_id: number
@@ -20,7 +21,7 @@ const Materials: React.FC = () => {
   const fetchMaterials = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:3001/api/materials')
+      const response = await fetch(`${API_BASE_URL}/materials`)
       if (!response.ok) {
         throw new Error('Failed to fetch materials')
       }
@@ -36,7 +37,7 @@ const Materials: React.FC = () => {
   // Update material stock quantity
   const updateMaterialStock = async (materialId: number, newQuantity: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/materials/${materialId}`, {
+      const response = await fetch(`${API_BASE_URL}/materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

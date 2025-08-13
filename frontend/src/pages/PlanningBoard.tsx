@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { format, addDays, differenceInDays, parseISO } from 'date-fns'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
+import { API_BASE_URL } from '../config'
 
 interface Order {
   order_id: number
@@ -54,7 +55,7 @@ const PlanningBoard: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:3001/api/orders')
+      const response = await fetch(`${API_BASE_URL}/orders`)
       if (!response.ok) {
         throw new Error('Failed to fetch orders')
       }
@@ -81,7 +82,7 @@ const PlanningBoard: React.FC = () => {
   // Update order dates
   const updateOrderDates = async (orderId: number, startDate: string, endDate: string) => {
     try {
-      const response = await fetch('http://localhost:3001/api/updateOrder', {
+      const response = await fetch(`${API_BASE_URL}/updateOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
